@@ -7,10 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.8" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\DynamicObjectCreationApp.Presentation\DynamicObjectCreationApp.Presentation.csproj" />
     <ProjectReference Include="..\DynamicObjectCreationApp.ServiceDefaults\DynamicObjectCreationApp.ServiceDefaults.csproj" />
   </ItemGroup>
 
