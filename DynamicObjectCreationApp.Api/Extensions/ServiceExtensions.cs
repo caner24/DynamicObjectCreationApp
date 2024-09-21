@@ -1,4 +1,7 @@
 ﻿
+using DynamicObjectCreationApp.Infracture;
+using DynamicObjectCreationApp.Infracture.Concrete;
+using Microsoft.EntityFrameworkCore;
 
 namespace DynamicObjectCreationApp.Api.Extensions
 {
@@ -18,6 +21,24 @@ namespace DynamicObjectCreationApp.Api.Extensions
      Newtonsoft.Json.ReferenceLoopHandling.Ignore);
         }
 
+        public static void ConfigureDbContext(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddDbContext<DynamicContext>(options =>
+            {
+                options.UseInMemoryDatabase(configuration.GetConnectionString("InMemoryDb"));
+            });
+        }
 
+        public static void RedisCacheSettings(this IServiceCollection services, IConfiguration config)
+        {
+            services.AddStackExchangeRedisOutputCache(options =>
+            {
+                options.Configuration = config.GetConnectionString("Redis");
+                options.InstanceName = "DynamicObjectCreationApp";
+            });
+
+
+
+        }
     }
 }

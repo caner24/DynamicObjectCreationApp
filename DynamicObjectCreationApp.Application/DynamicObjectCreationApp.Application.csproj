@@ -6,4 +6,13 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="Dynamic\Commands\Response\" />
+    <Folder Include="Dynamic\Commands\Request\" />
+    <Folder Include="Dynamic\Handlers\CommandHandlers\" />
+    <Folder Include="Dynamic\Handlers\QueryHandlers\" />
+    <Folder Include="Dynamic\Queries\Response\" />
+    <Folder Include="Dynamic\Queries\Request\" />
+  </ItemGroup>
+
 </Project>
