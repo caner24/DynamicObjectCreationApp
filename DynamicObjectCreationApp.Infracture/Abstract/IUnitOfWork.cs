@@ -11,7 +11,7 @@ namespace DynamicObjectCreationApp.Infracture.Abstract
         Task BeginTransactionAsync();
         Task CommitAsync();
         Task RollbackAsync();
-        IDynamicObejctDal DynamicObjectDal { get; }
+        IDynamicObjectDal DynamicObjectDal { get; }
 
     }
 }

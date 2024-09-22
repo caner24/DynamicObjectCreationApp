@@ -9,20 +9,18 @@ using System.Threading.Tasks;
 
 namespace DynamicObjectCreationApp.Infracture.Concrete
 {
-    internal class UnitOfWork : IUnitOfWork
+    public class UnitOfWork : IUnitOfWork
     {
-        private readonly IDynamicObejctDal _dynamicObjectDal;
+        private readonly IDynamicObjectDal _dynamicObjectDal;
         private readonly DynamicContext _dynamicContext;
 
-
-
-        public UnitOfWork(IDynamicObejctDal dynamicObjectDal, DynamicContext dynamicContext)
+        public UnitOfWork(IDynamicObjectDal dynamicObjectDal, DynamicContext dynamicContext)
         {
             _dynamicObjectDal = dynamicObjectDal;
             _dynamicContext = dynamicContext;
 
         }
-        public IDynamicObejctDal DynamicObjectDal => _dynamicObjectDal;
+        public IDynamicObjectDal DynamicObjectDal => _dynamicObjectDal;
         public async Task BeginTransactionAsync()
         {
             if (_dynamicContext.Database.CurrentTransaction == null)
@@ -61,6 +59,7 @@ namespace DynamicObjectCreationApp.Infracture.Concrete
         }
         public void Dispose()
         {
+            Log.Information("Disposing . . .");
             _dynamicContext.Dispose();
         }
     }

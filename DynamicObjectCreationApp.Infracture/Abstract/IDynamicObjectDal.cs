@@ -8,7 +8,7 @@ using DynamicObjectCreationApp.Entity;
 
 namespace DynamicObjectCreationApp.Infracture.Abstract
 {
-    public interface IDynamicObejctDal : IEFRepositoryBase<DynamicObject>
+    public interface IDynamicObjectDal : IEFRepositoryBase<DynamicObject>
     {
 
     }

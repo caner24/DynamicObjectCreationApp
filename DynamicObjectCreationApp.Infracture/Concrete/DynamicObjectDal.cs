@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 
 namespace DynamicObjectCreationApp.Infracture.Concrete
 {
-    public class DynamicContextDal : EFRepositoryBase<DynamicContext, DynamicObject>, IDynamicObejctDal
+    public class DynamicObjectDal : EFRepositoryBase<DynamicContext, DynamicObject>, IDynamicObjectDal
     {
-        public DynamicContextDal(DynamicContext context) : base(context)
+        public DynamicObjectDal(DynamicContext context) : base(context)
         {
         }
     }

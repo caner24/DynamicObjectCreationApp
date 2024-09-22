@@ -1,5 +1,6 @@
 using DynamicObjectCreationApp.Api.Extensions;
 using Serilog;
+using System.Reflection;
 
 Log.Logger = new LoggerConfiguration()
         .WriteTo.Console()
@@ -18,6 +19,9 @@ try
     builder.Services.AddSwaggerGen();
     builder.Services.RedisCacheSettings(builder.Configuration);
     builder.Services.ConfigureDbContext(builder.Configuration);
+    builder.Services.AddAutoMapper(typeof(Program));
+    builder.Services.ServiceLifetime();
+    builder.Services.AddMediatR(_ => _.RegisterServicesFromAssembly(Assembly.Load("DynamicObjectCreationApp.Application")));
 
     var app = builder.Build();
 

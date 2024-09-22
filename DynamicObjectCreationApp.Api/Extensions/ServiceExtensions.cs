@@ -1,5 +1,7 @@
 ﻿
+using DynamicObjectCreationApp.Entity;
 using DynamicObjectCreationApp.Infracture;
+using DynamicObjectCreationApp.Infracture.Abstract;
 using DynamicObjectCreationApp.Infracture.Concrete;
 using Microsoft.EntityFrameworkCore;
 
@@ -27,6 +29,13 @@ namespace DynamicObjectCreationApp.Api.Extensions
             {
                 options.UseInMemoryDatabase(configuration.GetConnectionString("InMemoryDb"));
             });
+        }
+
+
+        public static void ServiceLifetime(this IServiceCollection services)
+        {
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IDynamicObjectDal, DynamicObjectDal>();
         }
 
         public static void RedisCacheSettings(this IServiceCollection services, IConfiguration config)

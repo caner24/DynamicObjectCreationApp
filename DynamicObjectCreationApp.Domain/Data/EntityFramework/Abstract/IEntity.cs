@@ -8,7 +8,6 @@ namespace DynamicObjectCreationApp.Domain.Data.EntityFramework.Abstract
 {
     public interface IEntity
     {
-    
 
     }
 }

@@ -26,6 +26,16 @@ namespace DynamicObjectCreationApp.Domain.Data.EntityFramework.Concrete
             return entity;
         }
 
+        public async Task BulkUpdate(List<TEntity> entity)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task BulkDelete(Expression<Func<TEntity, bool>> filter)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task DeleteAsync(TEntity entity)
         {
             _context.Set<TEntity>().Remove(entity);
@@ -34,12 +44,12 @@ namespace DynamicObjectCreationApp.Domain.Data.EntityFramework.Concrete
 
         public IQueryable<TEntity> Get(Expression<Func<TEntity, bool>> filter, bool isTracking)
         {
-            return isTracking == false ? _context.Set<TEntity>().Where(filter).AsNoTracking():_context.Set<TEntity>().Where(filter);
+            return isTracking == false ? _context.Set<TEntity>().Where(filter).AsNoTracking() : _context.Set<TEntity>().Where(filter);
         }
 
         public IQueryable<TEntity> GetAll(Expression<Func<TEntity, bool>> filter = null)
         {
-          return filter==null ? _context.Set<TEntity>().AsNoTracking() : _context.Set<TEntity>().Where(filter).AsNoTracking();
+            return filter == null ? _context.Set<TEntity>().AsNoTracking() : _context.Set<TEntity>().Where(filter).AsNoTracking();
         }
 
         public async Task<TEntity> UpdateAsync(TEntity entity)

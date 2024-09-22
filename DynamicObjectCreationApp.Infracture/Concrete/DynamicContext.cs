@@ -1,4 +1,5 @@
 ﻿using DynamicObjectCreationApp.Domain.Data.EntityFramework.Abstract;
+using DynamicObjectCreationApp.Entity;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -19,7 +20,11 @@ namespace DynamicObjectCreationApp.Infracture.Concrete
         {
 
         }
-
-        public DbSet<IEntity> DynamicObjects { get; set; }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(DynamicContext).Assembly);
+            base.OnModelCreating(modelBuilder);
+        }
+        public DbSet<DynamicObject> DynamicObjects { get; set; }
     }
 }
