@@ -14,9 +14,6 @@ namespace DynamicObjectCreationApp.Domain.Data.EntityFramework.Abstract
         IQueryable<TEntity> Get(Expression<Func<TEntity, bool>> filter, bool isTracking = false);
         Task<TEntity> AddAsync(TEntity entity);
         Task<TEntity> UpdateAsync(TEntity entity);
-        Task DeleteAsync(TEntity entity);
-        Task BulkUpdate(List<TEntity> entity);
-        Task BulkDelete(Expression<Func<TEntity, bool>> filter);
 
     }
 }

@@ -25,16 +25,14 @@ namespace DynamicObjectCreationApp.Application.Dynamic.Handlers.QueryHandlers
 
         async Task<Result<List<DynamicObject>>> IRequestHandler<GetAllDynamicQueryRequest, Result<List<DynamicObject>>>.Handle(GetAllDynamicQueryRequest request, CancellationToken cancellationToken)
         {
-            var result = await _unitOfWork.DynamicObjectDal.GetAll(x => x.ObjectType == request.ObjectType).ToListAsync();
+            var result = request.ObjectType is not null ? await _unitOfWork.DynamicObjectDal.GetAll(x => x.TableName == request.ObjectType).ToListAsync() : await _unitOfWork.DynamicObjectDal.GetAll().ToListAsync();
 
             if (result != null)
             {
-                Log.Information("Data fetched succesfully.");
                 return Result.Ok(result);
             }
             else
             {
-                Log.Warning($"Data not found. ObjectType -> {request.ObjectType}");
                 return Result.Fail(new ObjectTypeNotFound());
             }
 

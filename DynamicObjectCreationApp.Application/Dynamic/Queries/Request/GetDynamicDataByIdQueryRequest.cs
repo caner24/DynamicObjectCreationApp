@@ -1,4 +1,5 @@
 ﻿using DynamicObjectCreationApp.Entity;
+using DynamicObjectCreationApp.Entity.Dto;
 using FluentResults;
 using MediatR;
 using System;
@@ -9,8 +10,8 @@ using System.Threading.Tasks;
 
 namespace DynamicObjectCreationApp.Application.Dynamic.Queries.Request
 {
-    public record GetAllDynamicQueryRequest : IRequest<Result<List<DynamicObject>>>
+    public record GetDynamicDataByIdQueryRequest : GetDynamicDataByIdDto, IRequest<Result<DynamicObject>>
     {
-        public string? ObjectType { get; set; }
+
     }
 }

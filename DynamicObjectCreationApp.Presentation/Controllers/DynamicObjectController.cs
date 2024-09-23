@@ -1,7 +1,9 @@
 ﻿using DynamicObjectCreationApp.Application.Dynamic.Commands.Request;
 using DynamicObjectCreationApp.Application.Dynamic.Queries.Request;
+using DynamicObjectCreationApp.Presentation.ActionFilters;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +24,8 @@ namespace DynamicObjectCreationApp.Presentation.Controllers
         }
 
         [HttpGet("getAllData")]
-        public async Task<IActionResult> GetById([FromQuery] GetAllDynamicQueryRequest getAllDynamicQueryRequest)
+        [OutputCache(Duration =60)]
+        public async Task<IActionResult> GetAllData([FromQuery] GetAllDynamicQueryRequest getAllDynamicQueryRequest)
         {
             var response = await _mediator.Send(getAllDynamicQueryRequest);
             if (response.IsSuccess)
@@ -33,10 +36,47 @@ namespace DynamicObjectCreationApp.Presentation.Controllers
             }
         }
 
+        [HttpGet("getById")]
+        [OutputCache(Duration = 60)]
+        [ServiceFilter(typeof(ValidationFilterAttribute))]
+        public async Task<IActionResult> GetById([FromQuery] GetDynamicDataByIdQueryRequest getDynamicDataByIdQueryRequest)
+        {
+            var response = await _mediator.Send(getDynamicDataByIdQueryRequest);
+            if (response.IsSuccess)
+                return Ok(response.Value);
+            else
+            {
+                return NotFound(response.Errors);
+            }
+        }
+
         [HttpPost("addDynamicData")]
+        [ServiceFilter(typeof(ValidationFilterAttribute))]
         public async Task<IActionResult> AddDynamicData([FromBody] AddDynamicDataCommandRequest addDynamicDataCommandRequest)
         {
             var response = await _mediator.Send(addDynamicDataCommandRequest);
+            if (response.IsSuccess)
+                return Ok(response.Value);
+            else
+                return StatusCode(500);
+        }
+
+        [HttpDelete("deleteDynamicData")]
+        [ServiceFilter(typeof(ValidationFilterAttribute))]
+        public async Task<IActionResult> DeleteDynamicData([FromBody] DeleteDynamicDataCommandRequest deleteDynamicDataCommandRequest)
+        {
+            var response = await _mediator.Send(deleteDynamicDataCommandRequest);
+            if (response.IsSuccess)
+                return Ok();
+            else
+                return NotFound(response.Errors);
+        }
+
+        [HttpPut("updateDynamicData")]
+        [ServiceFilter(typeof(ValidationFilterAttribute))]
+        public async Task<IActionResult> UpdateDynamicData([FromBody] UpdateDynamicDataCommandRequest updateDynamicDataCommandRequest)
+        {
+            var response = await _mediator.Send(updateDynamicDataCommandRequest);
             if (response.IsSuccess)
                 return Ok(response.Value);
             else

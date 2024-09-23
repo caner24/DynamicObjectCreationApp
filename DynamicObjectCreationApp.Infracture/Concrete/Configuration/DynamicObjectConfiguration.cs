@@ -14,10 +14,10 @@ namespace DynamicObjectCreationApp.Infracture.Concrete.Configuration
     {
         public void Configure(EntityTypeBuilder<DynamicObject> builder)
         {
-            builder.HasAlternateKey(x => x.ObjectType);
+            builder.HasAlternateKey(x => x.TableName);
             builder.Property(x => x.ObjectDataJson).HasConversion(
                 v => JsonConvert.SerializeObject(v),
-                v => JsonConvert.DeserializeObject<object>(v));
+                v => JsonConvert.DeserializeObject<List<object>>(v));
         }
     }
 }

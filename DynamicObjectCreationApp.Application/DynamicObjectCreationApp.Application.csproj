@@ -9,12 +9,12 @@
   <ItemGroup>
     <Folder Include="Dynamic\Commands\Response\" />
     <Folder Include="Dynamic\Queries\Response\" />
-    <Folder Include="Validation\FluentValidation\Dynamic\" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="13.0.1" />
     <PackageReference Include="FluentResults" Version="3.16.0" />
+    <PackageReference Include="FluentValidation" Version="11.10.0" />
     <PackageReference Include="MediatR" Version="12.4.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>

@@ -26,16 +26,6 @@ namespace DynamicObjectCreationApp.Domain.Data.EntityFramework.Concrete
             return entity;
         }
 
-        public async Task BulkUpdate(List<TEntity> entity)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task BulkDelete(Expression<Func<TEntity, bool>> filter)
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task DeleteAsync(TEntity entity)
         {
             _context.Set<TEntity>().Remove(entity);

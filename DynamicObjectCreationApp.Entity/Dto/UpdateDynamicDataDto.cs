@@ -2,15 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace DynamicObjectCreationApp.Entity.Dto
 {
-    public record AddDynamicObjectDto
+    public record UpdateDynamicDataDto : DynamicDataManipulationBaseDto
     {
-        public string? TableName { get; init; }
         public List<object>? ObjectDataJson { get; init; }
-
     }
 }

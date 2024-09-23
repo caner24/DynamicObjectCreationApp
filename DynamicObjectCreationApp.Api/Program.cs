@@ -1,6 +1,8 @@
 using DynamicObjectCreationApp.Api.Extensions;
 using Serilog;
 using System.Reflection;
+using FluentValidation;
+using DynamicObjectCreationApp.Application.Validation.FluentValidation.Dynamic;
 
 Log.Logger = new LoggerConfiguration()
         .WriteTo.Console()
@@ -18,9 +20,11 @@ try
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
     builder.Services.RedisCacheSettings(builder.Configuration);
-    builder.Services.ConfigureDbContext(builder.Configuration);
+    builder.Services.AddValidatorsFromAssemblyContaining<AddDynamicObjectDtoValidator>();
+    builder.Services.DbContextConfiguration(builder.Configuration);
     builder.Services.AddAutoMapper(typeof(Program));
     builder.Services.ServiceLifetime();
+    builder.Services.RateLimitingSettings();
     builder.Services.AddMediatR(_ => _.RegisterServicesFromAssembly(Assembly.Load("DynamicObjectCreationApp.Application")));
 
     var app = builder.Build();
