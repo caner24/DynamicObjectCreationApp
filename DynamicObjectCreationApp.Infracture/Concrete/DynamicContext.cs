@@ -26,5 +26,6 @@ namespace DynamicObjectCreationApp.Infracture.Concrete
             base.OnModelCreating(modelBuilder);
         }
         public DbSet<DynamicObject> DynamicObjects { get; set; }
+        public DbSet<FieldEntity> FieldEntity { get; set; }
     }
 }

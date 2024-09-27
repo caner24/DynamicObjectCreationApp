@@ -2,6 +2,7 @@
 using DynamicObjectCreationApp.Application.Dynamic.Commands.Request;
 using DynamicObjectCreationApp.Entity;
 using DynamicObjectCreationApp.Infracture.Abstract;
+using DynamicObjectCreationApp.Infracture.Concrete;
 using FluentResults;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -16,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace DynamicObjectCreationApp.Application.Dynamic.Handlers.CommandHandlers
 {
-    public class AddDynamicDataCommandHandler : IRequestHandler<AddDynamicDataCommandRequest, Result<DynamicObject>>
+    public class AddDynamicDataCommandHandler : IRequestHandler<AddDynamicDataCommandRequest, Result<string>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
@@ -25,45 +26,30 @@ namespace DynamicObjectCreationApp.Application.Dynamic.Handlers.CommandHandlers
             _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
-        public async Task<Result<DynamicObject>> Handle(AddDynamicDataCommandRequest request, CancellationToken cancellationToken)
+        public async Task<Result<string>> Handle(AddDynamicDataCommandRequest transaction, CancellationToken cancellationToken)
         {
-            var isExist = await _unitOfWork.DynamicObjectDal
-      .Get(x => x.TableName.ToLower() == request.TableName.ToLower(), isTracking: false)
-      .FirstOrDefaultAsync();
-
-            var mapper = _mapper.Map<DynamicObject>(request);
-
-            AddIdIfNotExists(ref mapper);
-
-            if (isExist is not null)
+            await _unitOfWork.BeginTransactionAsync();
+            try
             {
-                isExist.ObjectDataJson.AddRange(mapper.ObjectDataJson);
-                var result = await _unitOfWork.DynamicObjectDal.UpdateAsync(isExist);
-                return Result.Ok(result);
-            }
-            else
-            {
-                var result = await _unitOfWork.DynamicObjectDal.AddAsync(mapper);
-                return Result.Ok(result);
-            }
-
-        }
-        private void AddIdIfNotExists(ref DynamicObject dynamicObject)
-        {
-
-            for (int i = 0; i < dynamicObject.ObjectDataJson.Count; i++)
-            {
-                if (dynamicObject.ObjectDataJson[i] == null)
+                foreach (var kvp in transaction.DyanmicObject)
                 {
-                    continue; 
+                    var objectName = kvp.Key;
+                    var dataList = kvp.Value;
+
+                    foreach (var data in dataList)
+                    {
+                        await _unitOfWork.DynamicRepository.CreateAsync(objectName, data);
+                    }
                 }
-                var jsonObject = JsonConvert.DeserializeObject<JObject>(dynamicObject.ObjectDataJson[i].ToString());
-                if (!jsonObject.ContainsKey("id"))
-                {
-                    jsonObject["id"] = Guid.NewGuid();
-                }
-                dynamicObject.ObjectDataJson[i] = jsonObject;
+                await _unitOfWork.CommitAsync();
+                return Result.Ok("Created !.");
             }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackAsync();
+                return Result.Fail(ex.Message);
+            }
+
         }
     }
 }

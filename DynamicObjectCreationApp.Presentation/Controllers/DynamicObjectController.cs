@@ -1,5 +1,6 @@
 ﻿using DynamicObjectCreationApp.Application.Dynamic.Commands.Request;
-using DynamicObjectCreationApp.Application.Dynamic.Queries.Request;
+using DynamicObjectCreationApp.Entity;
+using DynamicObjectCreationApp.Infracture.Abstract;
 using DynamicObjectCreationApp.Presentation.ActionFilters;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -16,71 +17,36 @@ namespace DynamicObjectCreationApp.Presentation.Controllers
     [Route("api/[controller]/")]
     public class DynamicObjectController : ControllerBase
     {
-
         private readonly IMediator _mediator;
-        public DynamicObjectController(IMediator mediator)
+        private readonly IUnitOfWork _unitOfWork;
+        public DynamicObjectController(IMediator mediator, IUnitOfWork unitOfWork)
         {
             _mediator = mediator;
+            _unitOfWork = unitOfWork;
         }
 
-        [HttpGet("getAllData")]
-        [OutputCache(Duration =60)]
-        public async Task<IActionResult> GetAllData([FromQuery] GetAllDynamicQueryRequest getAllDynamicQueryRequest)
-        {
-            var response = await _mediator.Send(getAllDynamicQueryRequest);
-            if (response.IsSuccess)
-                return Ok(response.Value);
-            else
-            {
-                return NotFound(response.Errors);
-            }
-        }
-
-        [HttpGet("getById")]
-        [OutputCache(Duration = 60)]
-        [ServiceFilter(typeof(ValidationFilterAttribute))]
-        public async Task<IActionResult> GetById([FromQuery] GetDynamicDataByIdQueryRequest getDynamicDataByIdQueryRequest)
-        {
-            var response = await _mediator.Send(getDynamicDataByIdQueryRequest);
-            if (response.IsSuccess)
-                return Ok(response.Value);
-            else
-            {
-                return NotFound(response.Errors);
-            }
-        }
-
-        [HttpPost("addDynamicData")]
-        [ServiceFilter(typeof(ValidationFilterAttribute))]
-        public async Task<IActionResult> AddDynamicData([FromBody] AddDynamicDataCommandRequest addDynamicDataCommandRequest)
+        [HttpPost("addDyanmicData")]
+        public async Task<IActionResult> AddDyanmicData([FromBody] AddDynamicDataCommandRequest addDynamicDataCommandRequest)
         {
             var response = await _mediator.Send(addDynamicDataCommandRequest);
             if (response.IsSuccess)
                 return Ok(response.Value);
             else
-                return StatusCode(500);
+                return StatusCode(500, response.Errors);
         }
-
-        [HttpDelete("deleteDynamicData")]
-        [ServiceFilter(typeof(ValidationFilterAttribute))]
-        public async Task<IActionResult> DeleteDynamicData([FromBody] DeleteDynamicDataCommandRequest deleteDynamicDataCommandRequest)
+        [HttpPost("createDynamicDatabase")]
+        public async Task<IActionResult> CreateDynamicDatabase([FromBody] DynamicObject addDynamicDataCommandRequest)
         {
-            var response = await _mediator.Send(deleteDynamicDataCommandRequest);
-            if (response.IsSuccess)
+            try
+            {
+                await _unitOfWork.DynamicRepository.CreateTableAsync(addDynamicDataCommandRequest);
                 return Ok();
-            else
-                return NotFound(response.Errors);
-        }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error: " + ex.Message);
+            }
 
-        [HttpPut("updateDynamicData")]
-        [ServiceFilter(typeof(ValidationFilterAttribute))]
-        public async Task<IActionResult> UpdateDynamicData([FromBody] UpdateDynamicDataCommandRequest updateDynamicDataCommandRequest)
-        {
-            var response = await _mediator.Send(updateDynamicDataCommandRequest);
-            if (response.IsSuccess)
-                return Ok(response.Value);
-            else
-                return StatusCode(500);
         }
     }
 }

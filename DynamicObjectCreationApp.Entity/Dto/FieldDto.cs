@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace DynamicObjectCreationApp.Entity.Dto
 {
-    public record AddDynamicObjectDto
+    public record FieldDto
     {
-        public Dictionary<string, List<Dictionary<string, object>>>? DyanmicObject { get; init; }
-
+        public string? FieldName { get; init; }
+        public string? FieldValue { get; init; }
     }
+
 }

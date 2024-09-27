@@ -1,7 +1,10 @@
 ﻿using DynamicObjectCreationApp.Domain.Data.EntityFramework.Abstract;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.Common;
 using System.Dynamic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -19,34 +22,39 @@ namespace DynamicObjectCreationApp.Domain.Data.EntityFramework.Concrete
         {
             _context = context;
         }
-        public async Task<TEntity> AddAsync(TEntity entity)
+        public virtual async Task<TEntity> GetByIdAsync(int id)
         {
-            _context.Set<TEntity>().Add(entity);
+            return await _context.Set<TEntity>().FindAsync(id);
+        }
+
+        public virtual async Task<IEnumerable<TEntity>> GetAllAsync()
+        {
+            return await _context.Set<TEntity>().ToListAsync();
+        }
+
+        public virtual async Task<TEntity> AddAsync(TEntity entity)
+        {
+            await _context.Set<TEntity>().AddAsync(entity);
             await _context.SaveChangesAsync();
             return entity;
         }
 
-        public async Task DeleteAsync(TEntity entity)
+        public virtual async Task UpdateAsync(TEntity entity)
         {
+            _context.Entry(entity).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+        }
+
+        public virtual async Task DeleteAsync(int id)
+        {
+            var entity = await GetByIdAsync(id);
             _context.Set<TEntity>().Remove(entity);
             await _context.SaveChangesAsync();
         }
 
-        public IQueryable<TEntity> Get(Expression<Func<TEntity, bool>> filter, bool isTracking)
+        public virtual async Task<IEnumerable<TEntity>> GetAsync(Expression<Func<TEntity, bool>> predicate)
         {
-            return isTracking == false ? _context.Set<TEntity>().Where(filter).AsNoTracking() : _context.Set<TEntity>().Where(filter);
-        }
-
-        public IQueryable<TEntity> GetAll(Expression<Func<TEntity, bool>> filter = null)
-        {
-            return filter == null ? _context.Set<TEntity>().AsNoTracking() : _context.Set<TEntity>().Where(filter).AsNoTracking();
-        }
-
-        public async Task<TEntity> UpdateAsync(TEntity entity)
-        {
-            _context.Set<TEntity>().Update(entity);
-            await _context.SaveChangesAsync();
-            return entity;
+            return await _context.Set<TEntity>().Where(predicate).ToListAsync();
         }
     }
 }

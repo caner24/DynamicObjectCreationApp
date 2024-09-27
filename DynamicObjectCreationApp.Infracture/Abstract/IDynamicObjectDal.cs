@@ -10,6 +10,6 @@ namespace DynamicObjectCreationApp.Infracture.Abstract
 {
     public interface IDynamicObjectDal : IEFRepositoryBase<DynamicObject>
     {
-
+        Task<DynamicObject> GetByNameAsync(string name);
     }
 }

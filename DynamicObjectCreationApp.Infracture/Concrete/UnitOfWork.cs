@@ -11,15 +11,19 @@ namespace DynamicObjectCreationApp.Infracture.Concrete
 {
     public class UnitOfWork : IUnitOfWork
     {
+        private readonly IDynamicRepository _dynamicRepository;
         private readonly IDynamicObjectDal _dynamicObjectDal;
         private readonly DynamicContext _dynamicContext;
 
-        public UnitOfWork(IDynamicObjectDal dynamicObjectDal, DynamicContext dynamicContext)
+        public UnitOfWork(IDynamicRepository dynamicRepository, IDynamicObjectDal dynamicObjectDal, DynamicContext dynamicContext)
         {
+            _dynamicRepository = dynamicRepository;
             _dynamicObjectDal = dynamicObjectDal;
             _dynamicContext = dynamicContext;
 
         }
+        public DynamicContext DynamicContext => _dynamicContext;
+        public IDynamicRepository DynamicRepository => _dynamicRepository;
         public IDynamicObjectDal DynamicObjectDal => _dynamicObjectDal;
         public async Task BeginTransactionAsync()
         {

@@ -10,10 +10,12 @@ namespace DynamicObjectCreationApp.Domain.Data.EntityFramework.Abstract
 {
     public interface IEFRepositoryBase<TEntity> where TEntity : class, IEntity, new()
     {
-        IQueryable<TEntity> GetAll(Expression<Func<TEntity, bool>> filter = null);
-        IQueryable<TEntity> Get(Expression<Func<TEntity, bool>> filter, bool isTracking = false);
+        Task<TEntity> GetByIdAsync(int id);
+        Task<IEnumerable<TEntity>> GetAllAsync();
         Task<TEntity> AddAsync(TEntity entity);
-        Task<TEntity> UpdateAsync(TEntity entity);
+        Task UpdateAsync(TEntity entity);
+        Task DeleteAsync(int id);
+        Task<IEnumerable<TEntity>> GetAsync(Expression<Func<TEntity, bool>> predicate);
 
     }
 }

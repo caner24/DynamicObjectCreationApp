@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace DynamicObjectCreationApp.Application.Dynamic.Commands.Request
 {
-    public record AddDynamicDataCommandRequest : AddDynamicObjectDto, IRequest<Result<DynamicObject>>
+    public record AddDynamicDataCommandRequest : AddDynamicObjectDto, IRequest<Result<string>>
     {
 
     }
