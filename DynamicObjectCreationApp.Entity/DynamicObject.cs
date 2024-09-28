@@ -11,9 +11,13 @@ namespace DynamicObjectCreationApp.Entity
 {
     public class DynamicObject : IEntity
     {
+        public DynamicObject()
+        {
+            Fields = new List<FieldEntity>();
+        }
         public int Id { get; set; }
-        public string Name { get; set; }
-        public string TableName { get; set; }
+        public string? Name { get; set; }
+        public string? TableName { get; set; }
         public List<FieldEntity> Fields { get; set; }
 
     }

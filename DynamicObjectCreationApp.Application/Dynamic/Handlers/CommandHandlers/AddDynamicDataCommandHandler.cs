@@ -28,28 +28,35 @@ namespace DynamicObjectCreationApp.Application.Dynamic.Handlers.CommandHandlers
         }
         public async Task<Result<string>> Handle(AddDynamicDataCommandRequest transaction, CancellationToken cancellationToken)
         {
-            await _unitOfWork.BeginTransactionAsync();
-            try
+            var executionStrategy = _unitOfWork.DynamicContext.Database.CreateExecutionStrategy();
+
+            return await executionStrategy.ExecuteAsync(async () =>
             {
-                foreach (var kvp in transaction.DyanmicObject)
+                try
                 {
-                    var objectName = kvp.Key;
-                    var dataList = kvp.Value;
+                    //await _unitOfWork.BeginTransactionAsync();
 
-                    foreach (var data in dataList)
+                    foreach (var kvp in transaction.DyanmicObject)
                     {
-                        await _unitOfWork.DynamicRepository.CreateAsync(objectName, data);
-                    }
-                }
-                await _unitOfWork.CommitAsync();
-                return Result.Ok("Created !.");
-            }
-            catch (Exception ex)
-            {
-                await _unitOfWork.RollbackAsync();
-                return Result.Fail(ex.Message);
-            }
+                        var objectName = kvp.Key;
+                        var dataList = kvp.Value;
 
+                        foreach (var data in dataList)
+                        {
+                            await _unitOfWork.DynamicRepository.CreateAsync(objectName, data);
+                        }
+                    }
+                    //await _unitOfWork.DynamicContext.SaveChangesAsync();
+                    //await _unitOfWork.CommitAsync(); 
+                    return Result.Ok("Created!"); 
+                }
+                catch (Exception ex)
+                {
+                    //await _unitOfWork.RollbackAsync(); 
+                    return Result.Fail<string>(ex.Message);
+                }
+            });
         }
+
     }
 }

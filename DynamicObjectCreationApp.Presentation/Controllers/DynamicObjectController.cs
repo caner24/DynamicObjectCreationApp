@@ -35,11 +35,11 @@ namespace DynamicObjectCreationApp.Presentation.Controllers
                 return StatusCode(500, response.Errors);
         }
         [HttpPost("createDynamicDatabase")]
-        public async Task<IActionResult> CreateDynamicDatabase([FromBody] DynamicObject addDynamicDataCommandRequest)
+        public async Task<IActionResult> CreateDynamicDatabase([FromBody] DynamicObject dynamicObject)
         {
             try
             {
-                await _unitOfWork.DynamicRepository.CreateTableAsync(addDynamicDataCommandRequest);
+                await _unitOfWork.DynamicRepository.CreateTableAsync(dynamicObject);
                 return Ok();
             }
             catch (Exception ex)

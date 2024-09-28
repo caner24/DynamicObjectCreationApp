@@ -2,6 +2,7 @@ using DynamicObjectCreationApp.Api.Extensions;
 using Serilog;
 using System.Reflection;
 using FluentValidation;
+using DynamicObjectCreationApp.Infracture.Concrete;
 
 Log.Logger = new LoggerConfiguration()
         .WriteTo.Console()
@@ -12,7 +13,7 @@ try
     var builder = WebApplication.CreateBuilder(args);
 
     builder.AddServiceDefaults();
-
+  
     builder.Services.ConfigureController();
     builder.Services.AddProblemDetails();
     builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
@@ -25,7 +26,6 @@ try
     builder.Services.ServiceLifetime();
     builder.Services.RateLimitingSettings();
     builder.Services.AddMediatR(_ => _.RegisterServicesFromAssembly(Assembly.Load("DynamicObjectCreationApp.Application")));
-
     var app = builder.Build();
 
     app.MapDefaultEndpoints();

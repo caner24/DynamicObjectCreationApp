@@ -1,6 +1,8 @@
 ﻿using DynamicObjectCreationApp.Entity;
 using DynamicObjectCreationApp.Infracture.Abstract;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
+using MySqlConnector;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,19 +23,39 @@ namespace DynamicObjectCreationApp.Infracture.Concrete
         }
         public async Task CreateTableAsync(DynamicObject objectDefinition)
         {
-            var tableName = objectDefinition.TableName;
-            var fields = objectDefinition.Fields;
+            var executionStrategy = _dynamicContext.Database.CreateExecutionStrategy();
 
-            var sql = $"CREATE TABLE {tableName} (Id INT PRIMARY KEY IDENTITY, ";
-
-            foreach (var field in fields)
+            await executionStrategy.ExecuteAsync(async () =>
             {
-                sql += $"{field.Name} {GetSqlDataType(field.DataType)} {(field.IsRequired ? "NOT NULL" : "NULL")}, ";
-            }
+                await _dynamicContext.Database.BeginTransactionAsync();
+                try
+                {
+                    var tableName = objectDefinition.TableName;
+                    var fields = objectDefinition.Fields;
 
-            sql = sql.TrimEnd(',', ' ') + ")";
+                    var sql = $"CREATE TABLE {tableName} (Id INT AUTO_INCREMENT PRIMARY KEY, ";
 
-            await _dynamicContext.Database.ExecuteSqlRawAsync(sql);
+                    foreach (var field in fields)
+                    {
+                        sql += $"{field.Name} {GetSqlDataType(field.DataType)} {(field.IsRequired ? "NOT NULL" : "NULL")}, ";
+                    }
+
+                    sql = sql.TrimEnd(',', ' ') + ")";
+
+                    await _dynamicContext.Database.ExecuteSqlRawAsync(sql);
+                    await _dynamicContext.DynamicObjects.AddAsync(new DynamicObject { Name = objectDefinition.Name, TableName = tableName });
+                    foreach (var item in objectDefinition.Fields)
+                    {
+                        await _dynamicContext.FieldEntity.AddAsync(new FieldEntity { Name = item.Name, DataType = item.DataType, IsRequired = item.IsRequired, ObjectId = item.ObjectId });
+                    }
+                    await _dynamicContext.SaveChangesAsync();
+                    await _dynamicContext.Database.CommitTransactionAsync();
+                }
+                catch (Exception ex)
+                {
+                    await _dynamicContext.Database.RollbackTransactionAsync();
+                }
+            });
         }
 
         public async Task<int> CreateAsync(string objectName, Dictionary<string, object> data)
@@ -47,14 +69,14 @@ namespace DynamicObjectCreationApp.Infracture.Concrete
             var tableName = objectDefinition.TableName;
             var columns = string.Join(", ", data.Keys);
             var values = string.Join(", ", data.Keys.Select(k => $"@{k}"));
+            var sql = $"INSERT INTO {tableName} ({columns}) VALUES ({values}); SELECT LAST_INSERT_ID();";
 
-            var sql = $"INSERT INTO {tableName} ({columns}) OUTPUT INSERTED.Id VALUES ({values})";
+            var parameters = data.Select(kvp => new MySqlParameter($"@{kvp.Key}", kvp.Value ?? DBNull.Value)).ToArray();
 
-            var parameters = data.Select(kvp => new Microsoft.Data.SqlClient.SqlParameter($"@{kvp.Key}", kvp.Value ?? DBNull.Value)).ToArray();
-
-            var result = await ExecuteScalarAsync<int>(sql, parameters);
-            return result;
+            return await ExecuteScalarAsync<int>(sql, parameters);
         }
+
+
 
 
         private async Task ValidateDataAsync(DynamicObject objectDefinition, Dictionary<string, object> data)
@@ -67,18 +89,18 @@ namespace DynamicObjectCreationApp.Infracture.Concrete
                 }
             }
         }
-        private async Task<T> ExecuteScalarAsync<T>(string sql, Microsoft.Data.SqlClient.SqlParameter[] parameters)
+        private async Task<T> ExecuteScalarAsync<T>(string sql, MySqlParameter[] parameters)
         {
-            using (var command = _dynamicContext.Database.GetDbConnection().CreateCommand())
-            {
-                command.CommandText = sql;
-                command.Parameters.AddRange(parameters);
+            using var command = _dynamicContext.Database.GetDbConnection().CreateCommand();
+            command.CommandText = sql;
+            command.Parameters.AddRange(parameters);
+            command.Transaction = _dynamicContext.Database.CurrentTransaction?.GetDbTransaction();
 
-                await _dynamicContext.Database.OpenConnectionAsync();
+            if (command.Connection.State != System.Data.ConnectionState.Open)
+                await command.Connection.OpenAsync();
 
-                var result = await command.ExecuteScalarAsync();
-                return (T)Convert.ChangeType(result, typeof(T));
-            }
+            var result = await command.ExecuteScalarAsync();
+            return (T)Convert.ChangeType(result, typeof(T));
         }
         public Task<Dictionary<string, object>> GetByIdAsync(string objectName, int id)
         {
@@ -103,13 +125,12 @@ namespace DynamicObjectCreationApp.Infracture.Concrete
         {
             return dataType.ToLower() switch
             {
-                "string" => "NVARCHAR(MAX)",
+                "string" => "VARCHAR(255)",
                 "int" => "INT",
                 "datetime" => "DATETIME",
                 "bool" => "BIT",
-                _ => "NVARCHAR(MAX)"
+                _ => "VARCHAR(255)"
             };
-
         }
     }
 }
