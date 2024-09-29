@@ -76,9 +76,6 @@ namespace DynamicObjectCreationApp.Infracture.Concrete
             return await ExecuteScalarAsync<int>(sql, parameters);
         }
 
-
-
-
         private async Task ValidateDataAsync(DynamicObject objectDefinition, Dictionary<string, object> data)
         {
             foreach (var field in objectDefinition.Fields)
@@ -102,24 +99,119 @@ namespace DynamicObjectCreationApp.Infracture.Concrete
             var result = await command.ExecuteScalarAsync();
             return (T)Convert.ChangeType(result, typeof(T));
         }
-        public Task<Dictionary<string, object>> GetByIdAsync(string objectName, int id)
+        public async Task<Dictionary<string, object>> GetByIdAsync(string objectName, int id)
         {
-            throw new NotImplementedException();
+            var objectDefinition = await _dynamicObjectDal.GetByNameAsync(objectName);
+            if (objectDefinition == null)
+                throw new ArgumentException($"Object definition '{objectName}' not found.");
+
+            var tableName = objectDefinition.TableName;
+            var sql = $"SELECT * FROM {tableName} WHERE Id = @Id";
+
+            var parameters = new[] { new MySqlParameter("@Id", id) };
+
+            using var command = _dynamicContext.Database.GetDbConnection().CreateCommand();
+            command.CommandText = sql;
+            command.Parameters.AddRange(parameters);
+
+            if (command.Connection.State != System.Data.ConnectionState.Open)
+                await command.Connection.OpenAsync();
+
+            using var reader = await command.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                var result = new Dictionary<string, object>();
+                for (int i = 0; i < reader.FieldCount; i++)
+                {
+                    result[reader.GetName(i)] = reader.IsDBNull(i) ? null : reader.GetValue(i);
+                }
+                return result;
+            }
+
+            return null;
         }
 
-        public Task UpdateAsync(string objectName, int id, Dictionary<string, object> data)
+        public async Task UpdateAsync(string objectName, int id, Dictionary<string, object> data)
         {
-            throw new NotImplementedException();
+            var objectDefinition = await _dynamicObjectDal.GetByNameAsync(objectName);
+            if (objectDefinition == null)
+                throw new ArgumentException($"Object definition '{objectName}' not found.");
+
+            await ValidateDataAsync(objectDefinition, data);
+
+            var tableName = objectDefinition.TableName;
+            var setClause = string.Join(", ", data.Keys.Select(k => $"{k} = @{k}"));
+            var sql = $"UPDATE {tableName} SET {setClause} WHERE Id = @Id";
+
+            var parameters = data.Select(kvp => new MySqlParameter($"@{kvp.Key}", kvp.Value ?? DBNull.Value))
+                .Concat(new[] { new MySqlParameter("@Id", id) })
+                .ToArray();
+            await ExecuteNonQueryAsync(sql, parameters);
         }
 
-        public Task DeleteAsync(string objectName, int id)
+        public async Task DeleteAsync(string objectName, int id)
         {
-            throw new NotImplementedException();
+            var objectDefinition = await _dynamicObjectDal.GetByNameAsync(objectName);
+            if (objectDefinition == null)
+                throw new ArgumentException($"Object definition '{objectName}' not found.");
+
+            var tableName = objectDefinition.TableName;
+            var sql = $"DELETE FROM {tableName} WHERE Id = @Id";
+            var parameters = new[] { new MySqlParameter("@Id", id) };
+            await ExecuteNonQueryAsync(sql, parameters);
         }
 
-        public Task<List<Dictionary<string, object>>> GetAllAsync(string objectName, Dictionary<string, object> filters = null)
+        public async Task<List<Dictionary<string, object>>> GetAllAsync(string objectName, Dictionary<string, object> filters = null)
         {
-            throw new NotImplementedException();
+            var objectDefinition = await _dynamicObjectDal.GetByNameAsync(objectName);
+            if (objectDefinition == null)
+                throw new ArgumentException($"Object definition '{objectName}' not found.");
+
+            var tableName = objectDefinition.TableName;
+            var sql = $"SELECT * FROM {tableName}";
+
+            var parameters = new List<MySqlParameter>();
+
+            if (filters != null && filters.Count > 0)
+            {
+                var whereClause = string.Join(" AND ", filters.Keys.Select(k => $"{k} = @{k}"));
+                sql += $" WHERE {whereClause}";
+                parameters.AddRange(filters.Select(kvp => new MySqlParameter($"@{kvp.Key}", kvp.Value ?? DBNull.Value)));
+            }
+
+            using var command = _dynamicContext.Database.GetDbConnection().CreateCommand();
+            command.CommandText = sql;
+            command.Parameters.AddRange(parameters.ToArray());
+
+            if (command.Connection.State != System.Data.ConnectionState.Open)
+                await command.Connection.OpenAsync();
+
+            using var reader = await command.ExecuteReaderAsync();
+            var results = new List<Dictionary<string, object>>();
+
+            while (await reader.ReadAsync())
+            {
+                var row = new Dictionary<string, object>();
+                for (int i = 0; i < reader.FieldCount; i++)
+                {
+                    row[reader.GetName(i)] = reader.IsDBNull(i) ? null : reader.GetValue(i);
+                }
+                results.Add(row);
+            }
+
+            return results;
+        }
+        private async Task ExecuteNonQueryAsync(string sql, MySqlParameter[] parameters)
+        {
+            using var command = _dynamicContext.Database.GetDbConnection().CreateCommand();
+            command.CommandText = sql;
+            command.Parameters.AddRange(parameters);
+            command.Transaction = _dynamicContext.Database.CurrentTransaction?.GetDbTransaction();
+
+            if (command.Connection.State != System.Data.ConnectionState.Open)
+                await command.Connection.OpenAsync();
+
+            await command.ExecuteNonQueryAsync();
         }
         private string GetSqlDataType(string dataType)
         {

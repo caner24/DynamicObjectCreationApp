@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace DynamicObjectCreationApp.Application.Dynamic.Commands.Request
 {
-    public record DeleteDynamicDataCommandRequest : DeleteDynamicDataDto, IRequest<Result>
+    public record DeleteDynamicDataCommandRequest : DeleteDynamicDataDto, IRequest<Result<string>>
     {
 
     }

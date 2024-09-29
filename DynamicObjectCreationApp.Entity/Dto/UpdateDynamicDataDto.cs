@@ -8,6 +8,6 @@ namespace DynamicObjectCreationApp.Entity.Dto
 {
     public record UpdateDynamicDataDto : DynamicDataManipulationBaseDto
     {
-        public List<object>? ObjectDataJson { get; init; }
+        public Dictionary<string, object>? Data { get; init; }
     }
 }

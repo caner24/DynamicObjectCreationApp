@@ -8,10 +8,7 @@
 
   <ItemGroup>
     <Folder Include="Dynamic\Commands\Response\" />
-    <Folder Include="Dynamic\Handlers\QueryHandlers\" />
-    <Folder Include="Dynamic\Queries\Request\" />
     <Folder Include="Dynamic\Queries\Response\" />
-    <Folder Include="Validation\FluentValidation\Dynamic\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -25,7 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DynamicObjectCreationApp.Entity\DynamicObjectCreationApp.Entity.csproj" />
-    <ProjectReference Include="..\DynamicObjectCreationApp.Infracture\DynamicObjectCreationApp.Infracture.csproj" />
+    <ProjectReference Include="..\DynamicObjectCreationApp.Infracture\DynamicObjectCreationApp.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

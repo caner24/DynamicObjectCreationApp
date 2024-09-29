@@ -11,6 +11,9 @@ using System.Threading.RateLimiting;
 using DynamicObjectCreationApp.Presentation.ActionFilters;
 using FluentValidation;
 using DynamicObjectCreationApp.Entity.Dto;
+using DynamicObjectCreationApp.Application.Validation.FluentValidation.Dynamic;
+using DynamicObjectCreationApp.Application.Dynamic.Commands.Request;
+using DynamicObjectCreationApp.Application.Dynamic.Queries.Request;
 
 namespace DynamicObjectCreationApp.Api.Extensions
 {
@@ -45,6 +48,11 @@ namespace DynamicObjectCreationApp.Api.Extensions
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IDynamicObjectDal, DynamicObjectDal>();
             services.AddScoped<IDynamicRepository, DynamicRepository>();
+            services.AddScoped<IValidator<AddDynamicDataCommandRequest>, AddDynamicDataValidator>();
+            services.AddScoped<IValidator<DeleteDynamicDataCommandRequest>, DeleteDynamicValidator>();
+            services.AddScoped<IValidator<UpdateDynamicDataCommandRequest>, UpdateDynamicDataValidator>();
+            services.AddScoped<IValidator<GetDyanmicDataByIdQueryRequest>, GetDynamicDataValidator>();
+            services.AddScoped<ValidationFilterAttribute>();
         }
 
         public static void RedisCacheSettings(this IServiceCollection services, IConfiguration config)
